@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scrolling Text Background</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --grid-size: 7;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow-x: hidden;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f0f0f0;
+      z-index: -2;
+    }
+
+    .background-text {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .line {
+      white-space: nowrap;
+      position: absolute;
+      font-size: 24px;
+      opacity: 0.2;
+      color: black;
+      width: 100%;
+    }
+
+    .image-canvas {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-size), 1fr);
+      grid-template-rows: repeat(var(--grid-size), 1fr);
+      max-width: 600px;
+      margin: 2rem auto;
+      aspect-ratio: 1 / 1;
+      border: 2px solid black;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .image-piece {
+      width: 100%;
+      height: 100%;
+      background-image: url('https://i.pinimg.com/736x/2b/47/18/2b4718827a37b6f11dc82e939984c571.jpg');
+      background-size: calc(var(--grid-size) * 100%) calc(var(--grid-size) * 100%);
+      box-sizing: border-box;
+      border: 1px solid #ffc0cb;
+      position: relative;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 1rem;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .pretty-button {
+      background-color: #ffe4e1;
+      border: 1px solid black;
+      border-radius: 1.5rem;
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      cursor: pointer;
+      flex: 1 1 auto;
+      max-width: 200px;
+      text-align: center;
+      transition: all 0.2s ease-in-out;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .pretty-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .dragging {
+      opacity: 0.7;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-text" id="background"></div>
+
+  <div class="image-canvas" id="canvas"></div>
+
+  <div class="footer">
+    <div class="button-container">
+      <button class="pretty-button" onclick="handleClick('New')">New</button>
+      <button class="pretty-button" onclick="handleClick('Solve')">Solve</button>
+      <button class="pretty-button" onclick="handleClick('Yippee!')">Yippee!</button>
+    </div>
+  </div>
+
+  <script>
+    const lines = [
+      "🍕🎉🚀🌈",
+      "🐱📚🎮🍩",
+      "🎧🚘🌮🐶"
+    ];
+
+    const imageUrls = [
+  'https://glutenfreeonashoestring.com/wp-content/uploads/2024/02/Gluten-free-crumbl-cookies-1.jpg',
+  'https://i.pinimg.com/736x/2b/47/18/2b4718827a37b6f11dc82e939984c571.jpg', 
+  'https://plushthis.com/cdn/shop/files/a-white-baby-dragon-plush.jpg?v=1698815253&width=416'
+    ];
+
+
+    const container = document.getElementById("background");
+    const speeds = [30, 50, 70];
+    const numCopies = 30;
+    const lineHeight = 40;
+    let elements = [];
+
+    for (let i = 0; i < numCopies; i++) {
+      const line = document.createElement("div");
+      line.className = "line";
+      const baseText = lines[i % lines.length];
+      const repeatedText = baseText.repeat(100);
+      line.textContent = repeatedText;
+      line.style.top = `${i * lineHeight}px`;
+      container.appendChild(line);
+      elements.push({ el: line, speed: speeds[i % speeds.length], offset: Math.random() * 1000 });
+    }
+
+    function animateText(time) {
+      elements.forEach(obj => {
+        const x = (time / obj.speed + obj.offset) % window.innerWidth;
+        obj.el.style.transform = `translateX(-${x}px)`;
+      });
+      requestAnimationFrame(animateText);
+    }
+
+    requestAnimationFrame(animateText);
+
+const gridSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-size'));
+const canvas = document.getElementById("canvas");
+  let currentImageUrl = imageUrls[Math.floor(Math.random() * imageUrls.length)];
+
+
+// Create all background positions
+let positions = [];
+let solvePositions = [];
+
+function generatePieces() {
+  canvas.innerHTML = '';
+  positions = [];
+  solvePositions = [];
+
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const bg = `${(col / (gridSize - 1)) * 100}% ${(row / (gridSize - 1)) * 100}%`;
+      const gridSpace = { row, col, bg };
+      positions.push(gridSpace);
+      solvePositions.push(gridSpace);
+    }
+  }
+
+  // Shuffle the positions
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const piece = document.createElement("div");
+      piece.className = "image-piece";
+      piece.style.backgroundImage = `url('${currentImageUrl}')`;
+      piece.style.backgroundPosition = positions[row * gridSize + col].bg;
+      piece.draggable = true;
+      piece.dataset.row = row;
+      piece.dataset.col = col;
+
+      piece.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', `${row},${col}`);
+        piece.classList.add('dragging');
+      });
+
+      piece.addEventListener('dragend', () => {
+        piece.classList.remove('dragging');
+      });
+
+      piece.addEventListener('dragover', e => {
+        e.preventDefault();
+      });
+
+      piece.addEventListener('drop', e => {
+        e.preventDefault();
+        const [fromRow, fromCol] = e.dataTransfer.getData('text/plain').split(',').map(Number);
+        const fromIndex = fromRow * gridSize + fromCol;
+        const toIndex = row * gridSize + col;
+
+        const allPieces = document.querySelectorAll('.image-piece');
+        const fromEl = allPieces[fromIndex];
+        const toEl = allPieces[toIndex];
+
+        const tempBg = fromEl.style.backgroundPosition;
+        fromEl.style.backgroundPosition = toEl.style.backgroundPosition;
+        toEl.style.backgroundPosition = tempBg;
+      });
+
+      canvas.appendChild(piece);
+    }
+  }
+}
+
+generatePieces();
+
+function handleClick(label) {
+  console.log(`You clicked: ${label}`);
+  if (label === 'Solve') {
+    const allPieces = document.querySelectorAll('.image-piece');
+    for (let i = 0; i < allPieces.length; i++) {
+      allPieces[i].style.backgroundPosition = solvePositions[i].bg;
+    }
+  } else if (label === 'New') {
+    let nextImage;
+do {
+  nextImage = imageUrls[Math.floor(Math.random() * imageUrls.length)];
+} while (nextImage === currentImageUrl);
+currentImageUrl = nextImage;
+
+    generatePieces();
+  }
+}
+
+
+
+  </script>
+</body>
+</html>
