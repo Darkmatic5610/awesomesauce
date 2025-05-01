@@ -121,6 +121,8 @@
 
   <div class="image-canvas" id="canvas"></div>
 
+  <audio id="mySound" src="clickSound.mp3" preload="auto"></audio>
+
   <div class="footer">
     <div class="button-container">
       <button class="pretty-button" onclick="handleClick('New')">New</button>
@@ -251,7 +253,9 @@ function handleClick(label) {
     for (let i = 0; i < allPieces.length; i++) {
       allPieces[i].style.backgroundPosition = solvePositions[i].bg;
     }
+    document.getElementById("clickSound").play();
   } else if (label === 'New') {
+    document.getElementById("clickSound").play();
     let nextImage;
 do {
   nextImage = imageUrls[Math.floor(Math.random() * imageUrls.length)];
