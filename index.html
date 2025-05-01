@@ -201,48 +201,73 @@ function generatePieces() {
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
 
+  let selectedPiece = null;
+
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       const piece = document.createElement("div");
       piece.className = "image-piece";
       piece.style.backgroundImage = `url('${currentImageUrl}')`;
       piece.style.backgroundPosition = positions[row * gridSize + col].bg;
-      piece.draggable = true;
       piece.dataset.row = row;
       piece.dataset.col = col;
 
-      piece.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', `${row},${col}`);
-        piece.classList.add('dragging');
-      });
+      // Enable drag & drop only on desktop
+      if (window.innerWidth > 768) {
+        piece.draggable = true;
 
-      piece.addEventListener('dragend', () => {
-        piece.classList.remove('dragging');
-      });
+        piece.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', `${row},${col}`);
+          piece.classList.add('dragging');
+        });
 
-      piece.addEventListener('dragover', e => {
-        e.preventDefault();
-      });
+        piece.addEventListener('dragend', () => {
+          piece.classList.remove('dragging');
+        });
 
-      piece.addEventListener('drop', e => {
-        e.preventDefault();
-        const [fromRow, fromCol] = e.dataTransfer.getData('text/plain').split(',').map(Number);
-        const fromIndex = fromRow * gridSize + fromCol;
-        const toIndex = row * gridSize + col;
+        piece.addEventListener('dragover', e => {
+          e.preventDefault();
+        });
 
-        const allPieces = document.querySelectorAll('.image-piece');
-        const fromEl = allPieces[fromIndex];
-        const toEl = allPieces[toIndex];
+        piece.addEventListener('drop', e => {
+          e.preventDefault();
+          const [fromRow, fromCol] = e.dataTransfer.getData('text/plain').split(',').map(Number);
+          const fromIndex = fromRow * gridSize + fromCol;
+          const toIndex = row * gridSize + col;
 
-        const tempBg = fromEl.style.backgroundPosition;
-        fromEl.style.backgroundPosition = toEl.style.backgroundPosition;
-        toEl.style.backgroundPosition = tempBg;
+          const allPieces = document.querySelectorAll('.image-piece');
+          const fromEl = allPieces[fromIndex];
+          const toEl = allPieces[toIndex];
+
+          const tempBg = fromEl.style.backgroundPosition;
+          fromEl.style.backgroundPosition = toEl.style.backgroundPosition;
+          toEl.style.backgroundPosition = tempBg;
+        });
+      }
+
+      // Tap-to-select for touch devices
+      piece.addEventListener('click', () => {
+        if (!selectedPiece) {
+          selectedPiece = piece;
+          piece.classList.add('dragging');
+        } else if (selectedPiece === piece) {
+          piece.classList.remove('dragging');
+          selectedPiece = null;
+        } else {
+          const tempBg = selectedPiece.style.backgroundPosition;
+          selectedPiece.style.backgroundPosition = piece.style.backgroundPosition;
+          piece.style.backgroundPosition = tempBg;
+
+          selectedPiece.classList.remove('dragging');
+          selectedPiece = null;
+        }
       });
 
       canvas.appendChild(piece);
     }
   }
 }
+
 
 generatePieces();
 
