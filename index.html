@@ -314,6 +314,12 @@ function generatePieces() {
 
 generatePieces();
 
+function playSound(src) {
+  const sound = new Audio(src);
+  sound.play();
+}
+
+    
 function handleClick(label) {
   console.log(`You clicked: ${label}`);
   if (label === 'Solve') {
@@ -321,9 +327,9 @@ function handleClick(label) {
     for (let i = 0; i < allPieces.length; i++) {
       allPieces[i].style.backgroundPosition = solvePositions[i].bg;
     }
-    document.getElementById("clickSound").play();
+    playSound('clickSound.mp3');
   } else if (label === 'New') {
-    document.getElementById("clickSound").play();
+    playSound('clickSound.mp3');
     let nextImage;
 do {
   nextImage = imageUrls[Math.floor(Math.random() * imageUrls.length)];
