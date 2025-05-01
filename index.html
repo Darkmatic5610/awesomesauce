@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no, initial-scale=1.0" />
   <title>YIPPEE</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
@@ -337,7 +337,9 @@ do {
 currentImageUrl = nextImage;
 
     generatePieces();
-  }
+  } else if (label === 'Yippee!') {
+    playSound('clikcSound.mp3');
+    }
 }
  // Extra stuff to make the github webpage to work correctly I guess
  if ('serviceWorker' in navigator) {
