@@ -260,7 +260,10 @@ currentImageUrl = nextImage;
     generatePieces();
   }
 }
-
+ // Extra stuff to make the github webpage to work correctly I guess
+ if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').then(() => console.log('Service Worker Registered!'));
+}
 
 
   </script>
