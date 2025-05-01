@@ -4,9 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scrolling Text Background</title>
+  <title>YIPPEE</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
+  <meta name="format-detection" content="telephone=no">
   <style>
     :root {
       --grid-size: 7;
@@ -76,13 +77,37 @@
     }
 
     .footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      padding: 1rem;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    }
+  position: fixed;
+  bottom: 2rem; /* raise it a bit */
+  left: 0;
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+.button-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.row-buttons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.pretty-button.full {
+  width: 100%;
+  max-width: 400px;
+}
+
+.pretty-button.half {
+  flex: 1;
+  min-width: 120px;
+}
 
     .button-container {
       display: flex;
@@ -92,6 +117,9 @@
     }
 
     .pretty-button {
+      color: black;
+  -webkit-text-fill-color: black; /* iOS-specific */
+  text-decoration: none;
       background-color: #ffe4e1;
       border: 1px solid black;
       border-radius: 1.5rem;
@@ -99,7 +127,7 @@
       font-size: 1.25rem;
       cursor: pointer;
       flex: 1 1 auto;
-      max-width: 200px;
+      max-width: 150px;
       text-align: center;
       transition: all 0.2s ease-in-out;
       font-family: 'Quicksand', sans-serif;
@@ -124,12 +152,15 @@
   <audio id="clickSound" src="clickSound.mp3" preload="auto"></audio>
 
   <div class="footer">
-    <div class="button-container">
-      <button class="pretty-button" onclick="handleClick('New')">New</button>
-      <button class="pretty-button" onclick="handleClick('Solve')">Solve</button>
-      <button class="pretty-button" onclick="handleClick('Yippee!')">Yippee!</button>
+  <div class="button-stack">
+    <div class="row-buttons">
+      <button class="pretty-button half" onclick="handleClick('Solve')">Solve</button>
+      <button class="pretty-button half" onclick="handleClick('Yippee!')">Yippee!</button>
     </div>
+    <button class="pretty-button full" onclick="handleClick('New')">New</button>
   </div>
+</div>
+
 
   <script>
     const lines = [
