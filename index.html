@@ -151,6 +151,27 @@
       opacity: 0.7;
       z-index: 1000;
     }
+    @keyframes flashGreen {
+  from { box-shadow: inset 0 0 0 100px rgba(0,255,0,0.4); }
+  to   { box-shadow: inset 0 0 0   0px rgba(0,255,0,0); }
+}
+
+.correct-flash {
+  animation: flashGreen 2s ease-out;
+}
+
+@keyframes flashRed {
+  0%   { box-shadow: inset 0 0 0 100px rgba(255,0,0,0.4); }
+  100% { box-shadow: inset 0 0 0   0px rgba(255,0,0,0); }
+}
+
+.wrong-flash {
+  animation: flashRed 1s ease-out;
+}
+
+
+
+
   </style>
 </head>
 <body>
@@ -162,6 +183,7 @@
 
 
   <audio id="clickSound" src="clickSound.mp3" preload="auto"></audio>
+  <audio id="funnySound" src="funny.mp3" preload="auto"></audio>
 
   <div class="footer">
   <div class="button-stack">
@@ -176,15 +198,19 @@
 
   <script>
     const lines = [
-      "🍕🎉🚀🌈",
-      "🐱📚🎮🍩",
-      "🎧🚘🌮🐶"
+      "🫶🐈🦋🪻",
+      "🫧🧊🛼🩰",
+      "⛰️🏜️🏝️🌋"
     ];
 
     const imageUrls = [
-  'https://glutenfreeonashoestring.com/wp-content/uploads/2024/02/Gluten-free-crumbl-cookies-1.jpg',
-  'https://i.pinimg.com/736x/2b/47/18/2b4718827a37b6f11dc82e939984c571.jpg', 
-  'https://plushthis.com/cdn/shop/files/a-white-baby-dragon-plush.jpg?v=1698815253&width=416'
+      'https://glutenfreeonashoestring.com/wp-content/uploads/2024/02/Gluten-free-crumbl-cookies-1.jpg',
+      'https://i.pinimg.com/736x/2b/47/18/2b4718827a37b6f11dc82e939984c571.jpg', 
+      'candy.png',
+      'drink.png',
+      'cat.png',
+      'drive.png',
+      'flowers.png'
     ];
 
 
@@ -224,31 +250,55 @@ const canvas = document.getElementById("canvas");
 let positions = [];
 let solvePositions = [];
 
+function derangedShuffle(arr, solveArr) {
+  do {
+    // Fisher–Yates
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    // repeat until no element is in its “solved” spot
+  } while (arr.some((pos, i) => pos.bg === solveArr[i].bg));
+}
+
 function generatePieces() {
   canvas.innerHTML = '';
   positions = [];
   solvePositions = [];
-
+  // build the two arrays
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
-      const bg = `${(col / (gridSize - 1)) * 100}% ${(row / (gridSize - 1)) * 100}%`;
-      const gridSpace = { row, col, bg };
-      positions.push(gridSpace);
-      solvePositions.push(gridSpace);
+      const bg = `${(col/(gridSize-1))*100}% ${(row/(gridSize-1))*100}%`;
+      // inside your generatePieces() loop, after you compute `bg`…
+//piece.dataset.correctBg = bg;
+//piece.style.backgroundPosition = positions[row*gridSize + col].bg;
+
+      const cell = { row, col, bg };
+      positions.push(cell);
+      solvePositions.push(cell);
     }
   }
 
-  // Shuffle the positions
-  for (let i = positions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [positions[i], positions[j]] = [positions[j], positions[i]];
-  }
+  // now deranged‐shuffle “positions”
+  derangedShuffle(positions, solvePositions);
 
   let selectedPiece = null;
 
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       const piece = document.createElement("div");
+piece.className = "image-piece";
+piece.style.backgroundImage = `url('${currentImageUrl}')`;
+
+// Get shuffled and correct background positions
+const index = row * gridSize + col;
+const currentBg = positions[index].bg;
+const correctBg = solvePositions[index].bg;
+
+// Assign both
+piece.style.backgroundPosition = currentBg;
+piece.dataset.correctBg = correctBg;
+
       piece.className = "image-piece";
       piece.style.backgroundImage = `url('${currentImageUrl}')`;
       piece.style.backgroundPosition = positions[row * gridSize + col].bg;
@@ -307,6 +357,7 @@ function generatePieces() {
       });
 
       canvas.appendChild(piece);
+
     }
   }
 }
@@ -338,8 +389,39 @@ currentImageUrl = nextImage;
 
     generatePieces();
   } else if (label === 'Yippee!') {
-    playSound('clikcSound.mp3');
+  const allPieces = document.querySelectorAll('.image-piece');
+
+  allPieces.forEach((piece, i) => {
+    // 1. Pull the computed percentages
+    const cs = getComputedStyle(piece);
+    let [xStr, yStr] = cs.backgroundPosition.split(' ');
+    const xPct = parseFloat(xStr);   // eg. 16.6667
+    const yPct = parseFloat(yStr);
+
+    // 2. Parse your stored correct percentages
+    //    (we assume solvePositions[i].bg === "16.6666666667% 33.3333333333%" format)
+    const [tx, ty] = solvePositions[i].bg
+      .split(' ')
+      .map(s => parseFloat(s));
+
+    // 3. Compare within a .1% tolerance
+    if (Math.abs(xPct - tx) < 0.1 && Math.abs(yPct - ty) < 0.1) {
+      piece.classList.add('correct-flash');
+      piece.addEventListener('animationend', () => {
+        piece.classList.remove('correct-flash');
+      }, { once: true });
+    } else {
+      piece.classList.add('wrong-flash');
+      piece.addEventListener('animationend', () => {
+        piece.classList.remove('wrong-flash');
+      }, { once: true });
     }
+  });
+
+  playSound('funny.mp3');
+}
+
+
 }
  // Extra stuff to make the github webpage to work correctly I guess
  if ('serviceWorker' in navigator) {
